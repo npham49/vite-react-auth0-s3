@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 import "tw-elements";
 
 const Navbar = () => {
   const [auth, setauth] = useState(false)
   const [member, setMember] = useState(false)
+
+  const {loginWithRedirect, logout, isAuthenticated, user} = useAuth0()
+
   return (
     <nav className="relative w-full flex flex-wrap items-center justify-between py-3 bg-gray-900 text-gray-200 shadow-lg navbar navbar-expand-lg navbar-light">
       <div className="container-fluid w-full flex flex-wrap items-center justify-between px-6">
@@ -46,7 +50,7 @@ const Navbar = () => {
                 Home
               </Link>
             </li>
-            {auth && (<li className="nav-item p-2">
+            {isAuthenticated && (<li className="nav-item p-2">
               <Link
                 className="nav-link text-white opacity-60 hover:opacity-80 focus:opacity-80 p-0"
                 to="/shared"
@@ -54,7 +58,7 @@ const Navbar = () => {
                 Shared Storage
               </Link>
             </li>)}
-            {auth && member &&(<li className="nav-item p-2">
+            {isAuthenticated && member &&(<li className="nav-item p-2">
               <Link
                 className="nav-link text-white opacity-60 hover:opacity-80 focus:opacity-80 p-0"
                 to='/'
@@ -65,25 +69,27 @@ const Navbar = () => {
           </ul>
         </div>
          {/* This is the logged in user icon with logout and everything */}
-        {auth ? (<div className="flex items-center relative">
+        {isAuthenticated ? (<div className="flex items-center relative">
          
           <div className="dropdown relative">
             <ul
               className="dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 hidden m-0 bg-clip-padding border-none left-auto right-0"
               aria-labelledby="dropdownMenuButton1"
             >
-              {!auth && (<li>
-                <a
+              {!isAuthenticated && (<li>
+                <button
                   className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
-                  href="#"
+                  onClick={() => logout({ returnTo: window.location.origin })}
                 >
                   Logout
-                </a>
+                </button>
               </li>)}
               
             </ul>
           </div>
+
           <div className="dropdown relative">
+            
             <a
               className="dropdown-toggle flex items-center hidden-arrow"
               href="#"
@@ -92,24 +98,29 @@ const Navbar = () => {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
+              <div className="flex flex-row">
+                        <h1 className="mr-2">
+              {user?.name}
+          </h1>
               <img
-                src="https://mdbootstrap.com/img/new/avatars/2.jpg"
+                src={user?.picture}
                 className="rounded-full h-[25px] w-[25px]"
-                alt=""
+                alt={user?.name}
                 loading="lazy"
               />
+              </div>
             </a>
             <ul
               className="dropdown-menu min-w-max absolute hidden bg-white text-base z-50 float-left py-2 list-none text-left rounded-lg shadow-lg mt-1 hidden m-0 bg-clip-padding border-none left-auto right-0"
               aria-labelledby="dropdownMenuButton2"
             >
               <li>
-                <a
+              <button
                   className="dropdown-item text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-gray-700 hover:bg-gray-100"
-                  href="#"
+                  onClick={() => logout({ returnTo: window.location.origin })}
                 >
                   Logout
-                </a>
+                </button>
               </li>
               
             </ul>
@@ -119,6 +130,7 @@ const Navbar = () => {
             <button
               className="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-3 py-1 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
               type="button"
+              onClick={() => loginWithRedirect()}
             >
               Login
             </button>

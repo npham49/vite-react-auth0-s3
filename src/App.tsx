@@ -4,7 +4,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import Layout from "./components/Layout";
 import NoPage from "./pages/NoPage";
-import Login from "./pages/Login";
+
 import Shared from "./pages/Shared";
 
 function App() {
@@ -13,8 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="blogs" element={<Login />} />
-          <Route path="contact" element={<Shared />} />
+          <Route path="shared" element={<Shared />} />
           <Route path="*" element={<NoPage />} />
         </Route>
       </Routes>
