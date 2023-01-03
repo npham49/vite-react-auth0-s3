@@ -1,37 +1,54 @@
-import React,{useEffect, useState} from 'react'
-import ReactS3Client from 'react-aws-s3-typescript';
-import {s3Config} from '../s3Config';
+import {useEffect, useState} from 'react'
+import AWS from 'aws-sdk'
 
+AWS.config.update({
+  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+  secretAccessKey: import.meta.env.VITE_AWS_SECRET_KEY,
+  region: import.meta.env.VITE_S3_BUCKET_REGION,
+});
+
+const s3 = new AWS.S3();
+
+const params = {
+  Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
+  Delimiter: '',
+  Prefix: 'sharedspace/',
+};
 
 const Shared = () => {
   const [fileList, setfileList] = useState<any[]>([])
 
-  useEffect(() => {
-    const listFiles = async () => {
-      /* Import s3 config object and call the constrcutor */
-      const s3 = new ReactS3Client(s3Config);
-
-      try {
-          const rest = await s3.listFiles();
-          setfileList(rest.data.Contents.filter((file: any) => file.Key.startsWith('sharedspace/')))
-          /*
-          * {
-          *   Response: {
-          *     message: "Objects listed succesfully",
-          *     data: {                   // List of Objects
-          *       ...                     // Meta data
-          *       Contents: []            // Array of objects in the bucket
-          *     }
-          *   }
-          * }
-          */
-      } catch (exception) {
-          console.log(exception);
-          /* handle the exception */
-      }
+  //Get a temporary access key for 60 seconds
+  const getUrl = (key: string) => {
+    const url = s3.getSignedUrl('getObject', {
+      Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
+      Key: key,
+      Expires: 60 ,
+    })
+    return url
   }
-  listFiles();
-  console.log(fileList);
+
+  useEffect(() => {
+    // s3.getObject({
+    //   Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
+    //   Key: 'sharedspace/text.txt',
+    // }, (err, data) => {
+    //   if (err) {
+    //     console.log(err, err.stack);
+    //   } else {
+    //     console.log(data);
+    //   }
+    // });
+    
+    s3.listObjectsV2(params, (err, data) => {
+      if (err) {
+        console.log(err, err.stack);
+      } else {
+        console.log(data.Contents);
+        setfileList(data.Contents!)
+      }
+    });
+  // console.log(fileList);
   }, [])
   
   return (
@@ -39,12 +56,16 @@ const Shared = () => {
     //the library uses tailwindcss
     <div className="flex flex-col items-center justify-center">
       <div className="text-5xl font-bold">Shared</div>
-      <div className="text-2xl font-bold">Files:</div>
+      {/* upload button */}
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Upload
+        </button>
+      <div className="text-2xl font-bold">Files:</div> 
       <div className="flex flex-col items-center justify-center">
       {fileList.map((file) => (
         <div key={file.Key} className="flex flex-ocl items-center justify-center underline">
           <div className="text-xl font-bold">
-            <a href={file.publicUrl}>
+            <a href={getUrl(file.Key)}>
               {file?.Key.replace('sharedspace/', '')}
             </a>
           </div>
