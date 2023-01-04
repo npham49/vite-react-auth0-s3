@@ -7,8 +7,8 @@ const ProtectedRoute = ({ children,role }:{ children: JSX.Element,role:string })
   useEffect(()=> {
     async function checkRole() {
       const token = await getIdTokenClaims()
-      console.log(token?.[window.location.origin + '/roles'])
-      console.log(window.location.origin)
+      // console.log(token?.[window.location.origin + '/roles'])
+      // console.log(window.location.origin)
     }
     checkRole()
   },[])
