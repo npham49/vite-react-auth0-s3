@@ -82,7 +82,7 @@ const Shared = () => {
       };
       axios
         .get(`${import.meta.env.VITE_API_URL}/getfiles`, config)
-        .then(res=> {console.log(res)})
+        .then(res=> {console.log("this is from the API");console.log(res)})
         .catch(console.log);
     }
   }, [accessToken]);
