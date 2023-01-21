@@ -1,21 +1,7 @@
-import { SetStateAction, useEffect, useState } from "react";
-import AWS from "aws-sdk";
+import { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { FileIcon, defaultStyles, DefaultExtensionType, FileIconProps } from 'react-file-icon';
 import axios from "axios";
-
-AWS.config.update({
-  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-  secretAccessKey: import.meta.env.VITE_AWS_SECRET_KEY,
-  region: import.meta.env.VITE_S3_BUCKET_REGION,
-});
-
-const s3 = new AWS.S3();
-
-const params = {
-  Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
-  Delimiter: "",
-  Prefix: "sharedspace/",
-};
 
 const Shared = () => {
   const [fileList, setfileList] = useState<any[]>([]);
@@ -23,16 +9,6 @@ const Shared = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const { getAccessTokenSilently } = useAuth0();
-
-  //Get a temporary access key for 60 seconds
-  const getUrl = (key: string) => {
-    const url = s3.getSignedUrl("getObject", {
-      Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
-      Key: key,
-      Expires: 60,
-    });
-    return url;
-  };
 
   useEffect(() => {
     // s3.getObject({
@@ -80,7 +56,7 @@ const Shared = () => {
           console.log("this is from the API");
           console.log(res);
           if (res.status === 200) {
-            setfileList(res.data.Contents);
+            setfileList(res.data.urls);
           } else {
             console.log("error");
           }
@@ -140,16 +116,17 @@ const Shared = () => {
       </form>
 
       <div className="text-2xl font-bold">Files:</div>
-      <div className="flex flex-col items-center justify-center">
+      <div className="grid grid-cols-2 md:grid-cols-8 gap-4 items-center justify-center">
         {fileList.map((file) => (
           <div
             key={file.Key}
             className="flex flex-ocl items-center justify-center underline"
           >
-            <div className="text-xl font-bold">
-              <a href={getUrl(file.Key)}>
+            <div className="text-xl font-bold w-20 h-20">
+              {file.Key !== "sharedspace/" && <a href={file.Url}>
+                <FileIcon extension={file.Key.split('.').pop()} {...defaultStyles[file.Key.split('.').pop() as keyof Record<DefaultExtensionType, Partial<FileIconProps>>]} />
                 {file?.Key.replace("sharedspace/", "")}
-              </a>
+              </a>}
             </div>
           </div>
         ))}
